@@ -172,7 +172,7 @@ const app = {
                 await this.scanMitarbeiter(bereinigt);
                 break;
             case 'ausleihen-werkzeug':
-                this.scanWerkzeug(bereinigt);
+                await this.scanWerkzeug(bereinigt);
                 break;
             case 'zurueckgeben':
                 await this.scanRueckgabe(bereinigt);
@@ -200,6 +200,7 @@ const app = {
             ui.zeigeVersteckt('mitarbeiter-info', false);
             document.getElementById('btn-zu-schritt2').disabled = false;
             ui.melde('Mitarbeiter erkannt: ' + mitarbeiter.name, 'erfolg', { autoCloseMs: 2500 });
+            this.weiterZuWerkzeug();
         } catch (err) {
             this.mitarbeiter = null;
             ui.zeigeVersteckt('mitarbeiter-info', true);
@@ -213,13 +214,18 @@ const app = {
         }
     },
 
-    scanWerkzeug(barcode) {
+    async scanWerkzeug(barcode) {
         this.werkzeugCode = barcode;
         document.getElementById('input-werkzeug-barcode').value = barcode;
         ui.markiereFehler('input-werkzeug-barcode', false);
         ui.markiereFehler('input-werkzeug-name', false);
-        // Fokus auf das Pflichtfeld für die Beschreibung setzen
         const nameFeld = document.getElementById('input-werkzeug-name');
+        // Wenn bereits eine Beschreibung eingegeben wurde, direkt bestätigen
+        if (String(nameFeld.value || '').trim()) {
+            await this.bestaetigeAusleihe();
+            return;
+        }
+        // Fokus auf das Pflichtfeld für die Beschreibung setzen
         nameFeld.focus();
         ui.melde('Werkzeugcode erkannt. Bitte das Werkzeug beschreiben.', 'info', { autoCloseMs: 3000 });
     },
@@ -240,6 +246,7 @@ const app = {
             ui.zeigeVersteckt('rueckgabe-info', false);
             document.getElementById('btn-bestaetigen-rueckgabe').disabled = false;
             ui.melde('Ausleihe gefunden. Bitte die Rückgabe bestätigen.', 'erfolg', { autoCloseMs: 4000 });
+            await this.bestaetigeRueckgabe();
         } catch (err) {
             this.rueckgabeEintrag = null;
             ui.zeigeVersteckt('rueckgabe-info', true);

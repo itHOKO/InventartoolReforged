@@ -19,7 +19,9 @@ const ui = {
             seite.classList.add('aktiv');
             this.aktuelleSeite = seitenId;
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (typeof window.scrollTo === 'function') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     },
 
     /**
