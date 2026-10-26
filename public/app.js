@@ -285,21 +285,12 @@ const app = {
                 werkzeugName,
             });
             const eintrag = antwort.eintrag;
+            this.zeigeStartmenü();
             ui.melde(
                 'Ausleihe gespeichert: ' + eintrag.werkzeugName + ' an ' + eintrag.mitarbeiterName,
                 'erfolg',
-                {
-                    autoCloseMs: 3500,
-                    buttonLabel: 'Zum Startmenü',
-                    onButton: () => this.zeigeStartmenü(),
-                }
+                { autoCloseMs: 3000 }
             );
-            // Nach Erfolg automatisch zum Startmenü
-            window.setTimeout(() => {
-                if (ui.aktuelleMeldungText && ui.aktuelleMeldungText.indexOf('Ausleihe gespeichert') === 0) {
-                    this.zeigeStartmenü();
-                }
-            }, 3500);
         } catch (err) {
             ui.melde(err.message, 'fehler', {
                 autoCloseMs: 6000,
@@ -317,20 +308,12 @@ const app = {
         try {
             const antwort = await api.rueckgabeBestaetigen(this.rueckgabeEintrag.id);
             const eintrag = antwort.eintrag;
+            this.zeigeStartmenü();
             ui.melde(
                 'Rückgabe erfasst: ' + eintrag.werkzeugName + ' von ' + eintrag.mitarbeiterName,
                 'erfolg',
-                {
-                    autoCloseMs: 3500,
-                    buttonLabel: 'Zum Startmenü',
-                    onButton: () => this.zeigeStartmenü(),
-                }
+                { autoCloseMs: 3000 }
             );
-            window.setTimeout(() => {
-                if (ui.aktuelleMeldungText && ui.aktuelleMeldungText.indexOf('Rückgabe erfasst') === 0) {
-                    this.zeigeStartmenü();
-                }
-            }, 3500);
         } catch (err) {
             ui.melde(err.message, 'fehler', {
                 autoCloseMs: 6000,

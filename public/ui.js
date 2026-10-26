@@ -4,6 +4,8 @@
  */
 const ui = {
     aktuelleSeite: 'seite-start',
+    aktuelleMeldungText: '',
+    aktuelleMeldungTimer: null,
 
     /**
      * @param {string} seitenId
@@ -56,15 +58,16 @@ const ui = {
         this.aktuelleMeldungText = text;
 
         if (opt.autoCloseMs && opt.autoCloseMs > 0) {
-            window.clearTimeout(this._timer);
-            this._timer = window.setTimeout(() => this.verbergeMeldung(), opt.autoCloseMs);
+            window.clearTimeout(this.aktuelleMeldungTimer);
+            this.aktuelleMeldungTimer = window.setTimeout(() => this.verbergeMeldung(), opt.autoCloseMs);
         }
     },
 
     verbergeMeldung() {
         const container = document.getElementById('meldung-container');
         if (!container) return;
-        window.clearTimeout(this._timer);
+        window.clearTimeout(this.aktuelleMeldungTimer);
+        this.aktuelleMeldungTimer = null;
         container.classList.add('versteckt');
         container.innerHTML = '';
         this.aktuelleMeldungText = '';

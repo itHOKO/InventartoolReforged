@@ -1,31 +1,19 @@
 'use strict';
 /**
  * Barcode-Scanner-Anbindung.
- *
- * Hardware-Scanner (USB/HID) verhalten sich wie Tastaturen: sie tippen den
- * Code Zeichen für Zeichen und senden zum Abschluss "Enter". Manche Scanner
- * liefern zusätzlich einen Prefix (z. B. "TAB") – deshalb wird nicht auf das
- * Enter-Ereignis allein vertraut, sondern auf einen schnellen Tasten-Buffer.
- *
- * Es wird bewusst KEIN Scanner-Event des Herstellers vorausgesetzt, damit
- * jeder Standard-HID-Scanner ohne Konfiguration funktioniert.
  */
 const scanner = {
-    // Maximale Länge eines gültigen Barcodes
     maxLaenge: 64,
-    // Maximale Pause zwischen zwei Zeichen (ms). Scanner tippen sehr schnell.
+    autoLaenge: 4,
     maxPause: 120,
-    // Mindestlänge, damit einzelne Tastendrücke nicht als Scan gelten
     minLaenge: 2,
 
     puffer: '',
     zeitpunkt: 0,
     handler: null,
+    letzterCode: '',
+    _autoAusgeloest: false,
 
-    /**
-     * Registriert den Callback für gescannte Codes.
-     * @param {function(string): void} handler
-     */
     setzeHandler(handler) {
         this.handler = handler;
     },
@@ -39,10 +27,9 @@ const scanner = {
         const istEingabefeld = ziel && (ziel.tagName === 'INPUT' || ziel.tagName === 'TEXTAREA');
         const istFreitext = istEingabefeld && ziel.dataset.keinScanner === 'true';
 
-        // In Freitextfeldern (Beschreibung, Mitarbeiterliste) wird nichts abgefangen –
-        // dort soll der Nutzer normal tippen und Tab nutzen können.
         if (istFreitext) {
             this.puffer = '';
+            this._autoAusgeloest = false;
             return;
         }
 
@@ -50,60 +37,68 @@ const scanner = {
             if (this.codeAusFeld(ziel)) return;
             if (this.puffer.length >= this.minLaenge) {
                 event.preventDefault();
-                this.abschliessen();
+                this.abschliessen(false);
             }
             return;
         }
 
-        // TAB am Scanende (häufige Scanner-Variante)
         if (event.key === 'Tab') {
             if (this.puffer.length >= this.minLaenge) {
                 event.preventDefault();
-                this.abschliessen();
+                this.abschliessen(false);
             }
             return;
         }
 
-        // Steuerzeichen (Shift, Strg, Alt, Escape …) ignorieren
         if (event.key.length !== 1) return;
         if (event.ctrlKey || event.altKey || event.metaKey) return;
 
         const jetzt = Date.now();
         if (jetzt - this.zeitpunkt > this.maxPause) {
             this.puffer = '';
+            this._autoAusgeloest = false;
         }
         this.zeitpunkt = jetzt;
+        this._autoAusgeloest = false;
         this.puffer += event.key;
 
         if (this.puffer.length > this.maxLaenge) {
             this.puffer = '';
+            this._autoAusgeloest = false;
+        }
+
+        if (!istFreitext && this.puffer.length >= this.autoLaenge) {
+            event.preventDefault();
+            this.abschliessen(true);
+            return;
         }
     },
 
-    /**
-     * Liest einen Code aus dem fokussierten Eingabefeld (manuelle Eingabe).
-     * @returns {boolean} true, wenn ein Code übernommen wurde
-     */
     codeAusFeld(ziel) {
         if (!ziel || ziel.tagName !== 'INPUT') return false;
         const wert = String(ziel.value || '').trim();
         if (wert.length < this.minLaenge) return false;
+        if (this._autoAusgeloest && wert === this.letzterCode) {
+            this._autoAusgeloest = false;
+            this.puffer = '';
+            return true;
+        }
+        this._autoAusgeloest = false;
         this.puffer = '';
+        this.letzterCode = wert;
         if (this.handler) this.handler(wert);
         return true;
     },
 
-    abschliessen() {
+    abschliessen(auto = false) {
         const code = this.puffer.trim();
         this.puffer = '';
         if (!code) return;
+        this._autoAusgeloest = auto;
+        this.letzterCode = code;
         if (this.handler) this.handler(code);
     },
 
-    /**
-     * Setzt den Fokus auf das aktive Scanner-Feld.
-     * @param {string} elementId
-     */
     fokus(elementId) {
         const feld = document.getElementById(elementId);
         if (!feld) return;
