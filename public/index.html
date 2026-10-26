@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Werkzeugausleihe – Scanner-App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+    <!-- ===== STARTMENÜ ===== -->
+    <section id="seite-start" class="seite aktiv">
+        <h1>Werkzeugausleihe</h1>
+        <div class="button-gruppe">
+            <button class="btn btn-gross btn-primary" data-aktion="ausleihen">📥 Ausleihen</button>
+            <button class="btn btn-gross btn-secondary" data-aktion="zurueckgeben">📤 Zurückgeben</button>
+            <button class="btn btn-gross btn-info" data-aktion="offene">📋 Nicht zurückgegebene Werkzeuge</button>
+        </div>
+        <div class="button-gruppe klein">
+            <button class="btn btn-outline" data-aktion="mitarbeiterliste">👥 Mitarbeiterliste verwalten</button>
+            <button class="btn btn-outline" data-aktion="status">ℹ️ Status / Dateipfade</button>
+        </div>
+        <p id="start-status" class="statuszeile"></p>
+    </section>
+
+    <!-- ===== AUSLEIHEN – SCHRITT 1: MITARBEITER ===== -->
+    <section id="seite-ausleihen-mitarbeiter" class="seite">
+        <h2>Ausleihen – Schritt 1 von 2</h2>
+        <p class="hinweis">Bitte die <strong>Mitarbeiterkarte</strong> scannen</p>
+        <div class="scanner-feld">
+            <input type="text" id="input-mitarbeiter-barcode" class="scanner-input"
+                   autocomplete="off" placeholder="Mitarbeitercode…" aria-label="Mitarbeitercode">
+        </div>
+        <div id="mitarbeiter-info" class="info-karte versteckt">
+            <p><strong>Mitarbeiter-Barcode:</strong> <span id="anzeige-mitarbeiter-barcode"></span></p>
+            <p><strong>Name:</strong> <span id="anzeige-mitarbeiter-name"></span></p>
+        </div>
+        <div class="button-gruppe">
+            <button class="btn btn-warning" data-aktion="reset-mitarbeiter">↺ Neu scannen</button>
+            <button class="btn btn-primary" id="btn-zu-schritt2" data-aktion="weiter-werkzeug" disabled>Weiter zum Werkzeug →</button>
+            <button class="btn btn-outline" data-aktion="start">↩ Zurück zum Startmenü</button>
+        </div>
+    </section>
+
+    <!-- ===== AUSLEIHEN – SCHRITT 2: WERKZEUG ===== -->
+    <section id="seite-ausleihen-werkzeug" class="seite">
+        <h2>Ausleihen – Schritt 2 von 2</h2>
+        <div class="info-karte">
+            <p><strong>Mitarbeiter:</strong> <span id="anzeige-mitarbeiter-schritt2"></span></p>
+            <p><strong>Barcode:</strong> <span id="anzeige-mitarbeiter-barcode-schritt2"></span></p>
+        </div>
+        <p class="hinweis">Bitte den <strong>Werkzeug-Barcode</strong> scannen</p>
+        <div class="scanner-feld">
+            <input type="text" id="input-werkzeug-barcode" class="scanner-input"
+                   autocomplete="off" placeholder="Werkzeugcode…" aria-label="Werkzeugcode">
+        </div>
+        <div class="form-gruppe">
+            <label for="input-werkzeug-name">Werkzeugbeschreibung <span class="pflicht">* Pflichtfeld</span></label>
+            <input type="text" id="input-werkzeug-name" class="eingabe-feld"
+                   placeholder="z. B. Akkubohrschrauber, 18 V" autocomplete="off"
+                   data-kein-scanner="true">
+        </div>
+        <div class="button-gruppe">
+            <button class="btn btn-warning" data-aktion="reset-werkzeug">↺ Werkzeug neu scannen</button>
+            <button class="btn btn-outline" data-aktion="zurueck-mitarbeiter">↩ Zurück zu Schritt 1</button>
+            <button class="btn btn-primary" id="btn-bestaetigen-ausleihe" data-aktion="bestaetigen-ausleihe">✔ Bestätigen</button>
+        </div>
+    </section>
+
+    <!-- ===== ZURÜCKGEBEN ===== -->
+    <section id="seite-zurueckgeben" class="seite">
+        <h2>Werkzeug zurückgeben</h2>
+        <p class="hinweis">Bitte den <strong>Barcode des ausgeliehenen Werkzeugs</strong> scannen</p>
+        <div class="scanner-feld">
+            <input type="text" id="input-rueckgabe-barcode" class="scanner-input"
+                   autocomplete="off" placeholder="Werkzeugcode…" aria-label="Werkzeugcode Rückgabe">
+        </div>
+        <div id="rueckgabe-info" class="info-karte versteckt">
+            <p><strong>Mitarbeiter:</strong> <span id="anzeige-rueckgabe-mitarbeiter"></span></p>
+            <p><strong>Werkzeug:</strong> <span id="anzeige-rueckgabe-werkzeug"></span></p>
+            <p><strong>Werkzeug-Code:</strong> <span id="anzeige-rueckgabe-barcode"></span></p>
+            <p><strong>Ausgeliehen am:</strong> <span id="anzeige-rueckgabe-zeitstempel"></span></p>
+        </div>
+        <div class="button-gruppe">
+            <button class="btn btn-warning" data-aktion="reset-rueckgabe">↺ Neu scannen</button>
+            <button class="btn btn-success" id="btn-bestaetigen-rueckgabe" data-aktion="bestaetigen-rueckgabe" disabled>✔ Rückgabe bestätigen</button>
+            <button class="btn btn-outline" data-aktion="start">↩ Zurück zum Startmenü</button>
+        </div>
+    </section>
+
+    <!-- ===== OFFENE AUSLEIHEN ===== -->
+    <section id="seite-offene-ausleihen" class="seite">
+        <h2>Nicht zurückgegebene Werkzeuge</h2>
+        <div class="tabellen-container">
+            <table id="tabelle-offene-ausleihen">
+                <thead>
+                    <tr>
+                        <th>Mitarbeiter-Code</th>
+                        <th>Mitarbeiter-Name</th>
+                        <th>Werkzeug-Code</th>
+                        <th>Werkzeugbeschreibung</th>
+                        <th>Ausgeliehen am</th>
+                        <th>Dauer</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-offene-ausleihen"></tbody>
+            </table>
+        </div>
+        <div class="button-gruppe">
+            <button class="btn btn-outline" data-aktion="start">↩ Zurück zum Startmenü</button>
+        </div>
+    </section>
+
+    <!-- ===== MITARBEITERLISTE ===== -->
+    <section id="seite-mitarbeiter" class="seite">
+        <h2>Mitarbeiterliste</h2>
+        <p class="hinweis">
+            Die Liste wird in <code>Mitarbeiter.xlsx</code> gespeichert.
+            Erwartetes Format: Spalte&nbsp;1 = Barcode, Spalte&nbsp;2 = Name.
+        </p>
+        <div class="form-gruppe">
+            <label for="textarea-mitarbeiter">Mitarbeiterliste (CSV oder Tab-getrennt, eine Zeile pro Mitarbeiter)</label>
+            <textarea id="textarea-mitarbeiter" class="eingabe-feld textarea" rows="12"
+                      placeholder="1001,Max Mustermann&#10;1002,Erika Musterfrau"
+                      data-kein-scanner="true"></textarea>
+        </div>
+        <div class="button-gruppe">
+            <button class="btn btn-primary" data-aktion="mitarbeiter-speichern">💾 Mitarbeiterliste speichern</button>
+            <button class="btn btn-outline" data-aktion="mitarbeiter-laden">⬇️ Aus Excel laden</button>
+            <button class="btn btn-outline" data-aktion="start">↩ Zurück zum Startmenü</button>
+        </div>
+        <p id="mitarbeiter-status" class="statuszeile"></p>
+    </section>
+
+    <!-- ===== STATUS ===== -->
+    <section id="seite-status" class="seite">
+        <h2>Status</h2>
+        <div class="info-karte">
+            <p><strong>Mitarbeiter-Datei:</strong> <span id="status-mitarbeiter-datei"></span></p>
+            <p><strong>Ausleihen-Datei:</strong> <span id="status-ausleihe-datei"></span></p>
+            <p><strong>Mitarbeiter gesamt:</strong> <span id="status-mitarbeiter-anzahl"></span></p>
+            <p><strong>Ausleihen gesamt:</strong> <span id="status-ausleihen-anzahl"></span></p>
+            <p><strong>Offen:</strong> <span id="status-offen-anzahl"></span></p>
+        </div>
+        <div class="button-gruppe">
+            <button class="btn btn-outline" data-aktion="start">↩ Zurück zum Startmenü</button>
+        </div>
+    </section>
+
+    <!-- ===== MELDUNGEN ===== -->
+    <div id="meldung-container" class="versteckt" role="status" aria-live="polite"></div>
+</div>
+
+<script src="api.js"></script>
+<script src="scanner.js"></script>
+<script src="ui.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

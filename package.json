@@ -1,0 +1,16 @@
+{
+  "name": "werkzeugausleihe",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lokale Werkzeugausleihe mit Barcode-Scanner. Frontend im Browser, leichtgewichtiges Node-Backend schreibt direkt in die Excel-Dateien.",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test --test-concurrency=1",
+    "init-data": "node scripts/init-data.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

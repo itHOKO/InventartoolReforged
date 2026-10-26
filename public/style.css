@@ -1,0 +1,316 @@
+:root {
+    --blau: #1d4ed8;
+    --blau-dunkel: #1e3a8a;
+    --gruen: #15803d;
+    --gruen-dunkel: #14532d;
+    --rot: #b91c1c;
+    --rot-dunkel: #7f1d1d;
+    --gelb: #a16207;
+    --grau: #475569;
+    --grau-hell: #f1f5f9;
+    --rahmen: #cbd5e1;
+    --text: #0f172a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 16px;
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 17px;
+    color: var(--text);
+    background: #eef2f7;
+}
+
+#app {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 2rem;
+    margin: 0 0 20px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.4rem;
+    margin: 0 0 16px;
+}
+
+.seite {
+    display: none;
+    background: #fff;
+    border: 1px solid var(--rahmen);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+}
+
+.seite.aktiv {
+    display: block;
+}
+
+.hinweis {
+    font-size: 1.05rem;
+    color: var(--grau);
+    margin: 0 0 14px;
+}
+
+.statuszeile {
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--grau);
+    word-break: break-all;
+}
+
+/* ---------- Scanner-Eingabe ---------- */
+.scanner-feld {
+    margin: 0 0 18px;
+}
+
+.scanner-input {
+    width: 100%;
+    padding: 18px 20px;
+    font-size: 1.5rem;
+    font-family: "Consolas", "Courier New", monospace;
+    letter-spacing: 0.08em;
+    border: 3px solid var(--blau);
+    border-radius: 10px;
+    background: #f8fafc;
+    color: var(--text);
+    text-align: center;
+}
+
+.scanner-input:focus {
+    outline: none;
+    border-color: var(--blau-dunkel);
+    box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.18);
+}
+
+.scanner-input:disabled {
+    border-color: var(--rahmen);
+    background: var(--grau-hell);
+    color: var(--grau);
+}
+
+.scanner-input.fehler {
+    border-color: var(--rot);
+    box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.18);
+}
+
+/* ---------- Formular ---------- */
+.form-gruppe {
+    margin-bottom: 18px;
+}
+
+.form-gruppe label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.pflicht {
+    color: var(--rot);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.eingabe-feld {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 1.1rem;
+    border: 2px solid var(--rahmen);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--text);
+}
+
+.eingabe-feld:focus {
+    outline: none;
+    border-color: var(--blau);
+    box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.15);
+}
+
+.eingabe-feld.fehler {
+    border-color: var(--rot);
+    background: #fef2f2;
+}
+
+.textarea {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 1rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+/* ---------- Info-Karte ---------- */
+.info-karte {
+    background: var(--grau-hell);
+    border-left: 6px solid var(--blau);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+}
+
+.info-karte p {
+    margin: 4px 0;
+}
+
+.info-karte.versteckt {
+    display: none;
+}
+
+/* ---------- Buttons ---------- */
+.button-gruppe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.button-gruppe.klein .btn {
+    flex: 1 1 220px;
+}
+
+.btn {
+    padding: 14px 22px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #fff;
+    color: var(--text);
+    transition: filter 0.15s ease, transform 0.05s ease;
+}
+
+.btn:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.btn-gross {
+    flex: 1 1 260px;
+    padding: 26px 20px;
+    font-size: 1.25rem;
+}
+
+.btn-primary { background: var(--blau); color: #fff; }
+.btn-secondary { background: var(--gruen); color: #fff; }
+.btn-info { background: var(--grau); color: #fff; }
+.btn-success { background: var(--gruen); color: #fff; }
+.btn-warning { background: #f59e0b; color: #1f2937; }
+.btn-outline { border-color: var(--rahmen); color: var(--text); }
+.btn-outline:hover:not(:disabled) { border-color: var(--grau); }
+
+/* ---------- Tabelle ---------- */
+.tabellen-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 1px solid var(--rahmen);
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    background: var(--blau);
+    color: #fff;
+    text-align: left;
+    padding: 10px 12px;
+    z-index: 1;
+}
+
+tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--rahmen);
+    vertical-align: top;
+}
+
+tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+tbody tr:hover {
+    background: #e2e8f0;
+}
+
+.leerzeile {
+    padding: 24px;
+    text-align: center;
+    color: var(--grau);
+    font-style: italic;
+}
+
+/* ---------- Meldungen ---------- */
+#meldung-container {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    z-index: 100;
+    max-width: 92vw;
+}
+
+#meldung-container.versteckt {
+    display: none;
+}
+
+.meldung {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 22px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.05rem;
+    box-shadow: 0 6px 22px rgba(15, 23, 42, 0.28);
+}
+
+.meldung.erfolg { background: var(--gruen); }
+.meldung.fehler { background: var(--rot); }
+.meldung.info { background: var(--grau); }
+.meldung.warnung { background: var(--gelb); }
+
+.meldung button {
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.meldung button:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 620px) {
+    body { padding: 10px; }
+    .seite { padding: 16px; }
+    .btn-gross { padding: 20px 14px; font-size: 1.1rem; }
+    .scanner-input { font-size: 1.2rem; }
+    .tabellen-container { max-height: 55vh; }
+}
