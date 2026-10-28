@@ -25,6 +25,7 @@ Der Server bindet nur an `127.0.0.1` – er ist damit ausschließlich lokal nutz
 | **Ausleihen** | Mitarbeiterkarte scannen → Name wird angezeigt → Werkzeug scannen → Beschreibung eintippen → *Bestätigen* |
 | **Zurückgeben** | Barcode des Werkzeugs scennen → Angaben zur offenen Ausleihe werden angezeigt → *Rückgabe bestätigen* |
 | **Nicht zurückgegebene Werkzeuge** | Liste aller offenen Ausleihen mit Mitarbeiter, Werkzeug und Dauer |
+| **Mitarbeiter hinzufügen** | Namen eingeben → Enter → Mitarbeiterkarte scannen → Mitarbeiter wird gespeichert |
 | **Mitarbeiterliste verwalten** | Liste als CSV/Tab-getrennt pflegen, wird nach `Mitarbeiter.xlsx` geschrieben |
 
 Jede Ausleihe betrifft **ein** Werkzeug. Ein Mitarbeiter kann beliebig oft

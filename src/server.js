@@ -128,6 +128,30 @@ const api = {
     return { anzahl: sauber.length };
   },
 
+  'POST /api/mitarbeiter/hinzufuegen': async (req) => {
+    const daten = await leseJson(req);
+    const barcode = store.normiereCode(daten.barcode);
+    const name = String(daten.name || '').trim();
+    if (!name) throw apiFehler('Bitte den Namen des Mitarbeiters eingeben (Pflichtfeld).', 400);
+    if (!barcode) throw apiFehler('Es wurde keine Mitarbeiterkarte gescannt.', 400);
+    const vorhanden = store.mitarbeiterSuchen(barcode);
+    if (vorhanden) {
+      throw apiFehler(
+        `Mitarbeiterkarte "${barcode}" ist bereits ${vorhanden.name} zugeordnet.`,
+        409
+      );
+    }
+    const mitarbeiter = store.mitarbeiterHinzufuegen({ barcode, name });
+    if (!mitarbeiter) {
+      throw apiFehler(`Mitarbeiterkarte "${barcode}" ist bereits zugeordnet.`, 409);
+    }
+    return { mitarbeiter };
+  },
+  // Alias-Routen
+  'POST /api/mitarbeiter/hinzufügen': async (req) => api['POST /api/mitarbeiter/hinzufuegen'](req),
+  'POST /api/mitarbeiter/neu': async (req) => api['POST /api/mitarbeiter/hinzufuegen'](req),
+  'POST /api/mitarbeiter/add': async (req) => api['POST /api/mitarbeiter/hinzufuegen'](req),
+
   'POST /api/ausleihen': async (req) => {
     const daten = await leseJson(req);
     const werkzeugCode = store.normiereCode(daten.werkzeugCode);

@@ -6,12 +6,14 @@
  *   start  →  ausleihen-mitarbeiter  →  ausleihen-werkzeug
  *   start  →  zurueckgeben
  *   start  →  offene
+ *   start  →  mitarbeiter-hinzufuegen  →  mitarbeiter-hinzufuegen-barcode
  */
 const app = {
     schritt: 'start',
     mitarbeiter: null,      // { barcode, name }
     werkzeugCode: '',       // gescannter Werkzeug-Barcodes
     rueckgabeEintrag: null, // gefundene offene Ausleihe
+    neuerMitarbeiterName: '', // Name fuer neuen Mitarbeiter
 
     init() {
         document.addEventListener('click', (event) => {
@@ -30,6 +32,20 @@ const app = {
             }
         });
 
+        // Enter im Namensfeld (Mitarbeiter hinzufügen) bestätigt direkt
+        const namensFelder = ['input-mitarbeiter-name', 'input-neuer-mitarbeiter-name', 'input-mitarbeiter-name-neu'];
+        for (const id of namensFelder) {
+            const feld = document.getElementById(id);
+            if (feld && typeof feld.addEventListener === 'function') {
+                feld.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        this.weiterZuMitarbeiterBarcode();
+                    }
+                });
+            }
+        }
+
         this.zeigeStartmenü();
         this.ladeStatus();
     },
@@ -39,6 +55,10 @@ const app = {
         switch (aktion) {
             case 'start': this.zeigeStartmenü(); break;
             case 'ausleihen': await this.startAusleihen(); break;
+            case 'mitarbeiter-hinzufuegen': await this.startMitarbeiterHinzufuegen(); break;
+            case 'mitarbeiter-hinzufuegen-start': await this.startMitarbeiterHinzufuegen(); break;
+            case 'neuer-mitarbeiter': await this.startMitarbeiterHinzufuegen(); break;
+            case 'mitarbeiter-neu': await this.startMitarbeiterHinzufuegen(); break;
             case 'zurueckgeben': this.startRueckgabe(); break;
             case 'offene': await this.zeigeOffeneAusleihen(); break;
             case 'status': await this.zeigeStatus(); break;
@@ -47,9 +67,21 @@ const app = {
             case 'mitarbeiter-speichern': await this.mitarbeiterlisteSpeichern(); break;
             case 'reset-mitarbeiter': this.resetMitarbeiter(); break;
             case 'weiter-werkzeug': this.weiterZuWerkzeug(); break;
+            case 'weiter-mitarbeiter-barcode': this.weiterZuMitarbeiterBarcode(); break;
+            case 'weiter-zu-mitarbeiter-barcode': this.weiterZuMitarbeiterBarcode(); break;
+            case 'weiter-barcode': this.weiterZuMitarbeiterBarcode(); break;
+            case 'weiter': this.weiterZuMitarbeiterBarcode(); break;
             case 'reset-werkzeug': this.resetWerkzeug(); break;
+            case 'reset-mitarbeiter-hinzufuegen': this.resetMitarbeiterHinzufuegen(); break;
+            case 'reset-neuer-mitarbeiter': this.resetMitarbeiterHinzufuegen(); break;
             case 'zurueck-mitarbeiter': this.zurueckZuMitarbeiter(); break;
+            case 'zurueck-mitarbeiter-name': this.zurueckZuMitarbeiterName(); break;
+            case 'zurueck-zu-mitarbeiter-name': this.zurueckZuMitarbeiterName(); break;
+            case 'zurueck-zu-name': this.zurueckZuMitarbeiterName(); break;
             case 'bestaetigen-ausleihe': await this.bestaetigeAusleihe(); break;
+            case 'bestaetigen-mitarbeiter-hinzufuegen': await this.bestaetigeMitarbeiterHinzufuegen(); break;
+            case 'bestaetigen-neuer-mitarbeiter': await this.bestaetigeMitarbeiterHinzufuegen(); break;
+            case 'mitarbeiter-hinzufuegen-speichern': await this.bestaetigeMitarbeiterHinzufuegen(); break;
             case 'reset-rueckgabe': this.resetRueckgabe(); break;
             case 'bestaetigen-rueckgabe': await this.bestaetigeRueckgabe(); break;
             default: break;
@@ -65,11 +97,55 @@ const app = {
         this.mitarbeiter = null;
         this.werkzeugCode = '';
         this.rueckgabeEintrag = null;
+        this.neuerMitarbeiterName = '';
         ui.verbergeMeldung();
         ui.zeigeSeite('seite-start');
         this.ladeStatus();
     },
 
+    _element(ids) {
+        for (const id of ids) {
+            const el = document.getElementById(id);
+            if (el) return el;
+        }
+        return null;
+    },
+
+    _wert(ids) {
+        const el = this._element(ids);
+        return el ? String(el.value || '').trim() : '';
+    },
+
+    _setzeWert(ids, wert) {
+        const el = this._element(ids);
+        if (el) el.value = wert == null ? '' : String(wert);
+        return el;
+    },
+
+    _setzeText(ids, text) {
+        const el = this._element(ids);
+        if (el) el.textContent = text == null ? '' : String(text);
+        return el;
+    },
+
+    _markiereFehler(ids, fehler) {
+        const el = this._element(ids);
+        if (el) ui.markiereFehler(el.id, fehler);
+        return el;
+    },
+
+    async startMitarbeiterHinzufuegen() {
+        this.neuerMitarbeiterName = '';
+        this._setzeWert(['input-mitarbeiter-name', 'input-neuer-mitarbeiter-name', 'input-mitarbeiter-name-neu'], '');
+        this._setzeWert(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], '');
+        this._markiereFehler(['input-mitarbeiter-name', 'input-neuer-mitarbeiter-name', 'input-mitarbeiter-name-neu'], false);
+        this._markiereFehler(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], false);
+        const seite = this._element(['seite-mitarbeiter-hinzufuegen', 'seite-mitarbeiter-hinzufuegen-name', 'seite-neuer-mitarbeiter', 'seite-mitarbeiter-neu']);
+        if (seite) ui.zeigeSeite(seite.id);
+        this.schritt = 'mitarbeiter-hinzufuegen';
+        const nameFeld = this._element(['input-mitarbeiter-name', 'input-neuer-mitarbeiter-name', 'input-mitarbeiter-name-neu']);
+        if (nameFeld) nameFeld.focus();
+    },
     async startAusleihen() {
         this.mitarbeiter = null;
         this.werkzeugCode = '';
@@ -92,6 +168,87 @@ const app = {
             ui.melde(err.message, 'fehler', { autoCloseMs: 6000 });
         }
         scanner.fokus('input-mitarbeiter-barcode');
+    },
+
+    weiterZuMitarbeiterBarcode() {
+        const nameFeldIds = ['input-mitarbeiter-name', 'input-neuer-mitarbeiter-name', 'input-mitarbeiter-name-neu'];
+        const name = this._wert(nameFeldIds);
+        if (!name) {
+            this._markiereFehler(nameFeldIds, true);
+            ui.melde('Bitte den Namen des Mitarbeiters eingeben (Pflichtfeld).', 'fehler', { autoCloseMs: 4000 });
+            return;
+        }
+        this.neuerMitarbeiterName = name;
+        this._setzeWert(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], '');
+        this._markiereFehler(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], false);
+        const seite = this._element(['seite-mitarbeiter-hinzufuegen-barcode', 'seite-mitarbeiter-hinzufuegen-code', 'seite-mitarbeiter-barcode-neu']);
+        if (seite) ui.zeigeSeite(seite.id);
+        this.schritt = 'mitarbeiter-hinzufuegen-barcode';
+        this._setzeText(['anzeige-neuer-mitarbeiter-name', 'anzeige-mitarbeiter-name-neu', 'anzeige-mitarbeiter-hinzufuegen-name'], name);
+        const barcodeFeld = this._element(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code']);
+        if (barcodeFeld) barcodeFeld.focus();
+    },
+
+    zurueckZuMitarbeiterName() {
+        const seite = this._element(['seite-mitarbeiter-hinzufuegen', 'seite-mitarbeiter-hinzufuegen-name', 'seite-neuer-mitarbeiter', 'seite-mitarbeiter-neu']);
+        if (seite) ui.zeigeSeite(seite.id);
+        this.schritt = 'mitarbeiter-hinzufuegen';
+        const nameFeld = this._element(['input-mitarbeiter-name', 'input-neuer-mitarbeiter-name', 'input-mitarbeiter-name-neu']);
+        if (nameFeld) {
+            if (this.neuerMitarbeiterName) nameFeld.value = this.neuerMitarbeiterName;
+            nameFeld.focus();
+        }
+    },
+
+    resetMitarbeiterHinzufuegen() {
+        this._setzeWert(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], '');
+        this._markiereFehler(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], false);
+        const barcodeFeld = this._element(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code']);
+        if (barcodeFeld) barcodeFeld.focus();
+    },
+
+    async bestaetigeMitarbeiterHinzufuegen() {
+        const name = this.neuerMitarbeiterName || this._wert(['input-mitarbeiter-name', 'input-neuer-mitarbeiter-name', 'input-mitarbeiter-name-neu']);
+        const barcode = this._wert(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code']);
+        if (!name) {
+            ui.melde('Bitte zuerst den Namen des Mitarbeiters eingeben (Pflichtfeld).', 'fehler', { autoCloseMs: 4000 });
+            return;
+        }
+        if (!barcode) {
+            this._markiereFehler(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], true);
+            ui.melde('Bitte die Mitarbeiterkarte scannen.', 'fehler', { autoCloseMs: 4000 });
+            return;
+        }
+        try {
+            const antwort = await api.mitarbeiterHinzufuegen({ barcode, name });
+            const mitarbeiter = antwort.mitarbeiter || { barcode, name };
+            this.neuerMitarbeiterName = '';
+            this.zeigeStartmenü();
+            ui.melde('Mitarbeiter hinzugefügt: ' + mitarbeiter.name + ' (' + mitarbeiter.barcode + ')', 'erfolg', { autoCloseMs: 3000 });
+        } catch (err) {
+            this._markiereFehler(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], true);
+            ui.melde(err.message, 'fehler', { autoCloseMs: 6000, buttonLabel: 'Zum Startmenü', onButton: () => this.zeigeStartmenü() });
+        }
+    },
+
+    async scanMitarbeiterHinzufuegen(barcode) {
+        const name = this.neuerMitarbeiterName || this._wert(['input-mitarbeiter-name', 'input-neuer-mitarbeiter-name', 'input-mitarbeiter-name-neu']);
+        if (!name) {
+            ui.melde('Bitte zuerst den Namen des Mitarbeiters eingeben (Pflichtfeld).', 'fehler', { autoCloseMs: 4000 });
+            return;
+        }
+        this._setzeWert(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], barcode);
+        this._markiereFehler(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], false);
+        try {
+            const antwort = await api.mitarbeiterHinzufuegen({ barcode, name });
+            const mitarbeiter = antwort.mitarbeiter || { barcode, name };
+            this.neuerMitarbeiterName = '';
+            this.zeigeStartmenü();
+            ui.melde('Mitarbeiter hinzugefügt: ' + mitarbeiter.name + ' (' + mitarbeiter.barcode + ')', 'erfolg', { autoCloseMs: 3000 });
+        } catch (err) {
+            this._markiereFehler(['input-mitarbeiter-barcode-neu', 'input-neuer-mitarbeiter-barcode', 'input-mitarbeiter-barcode-neuer', 'input-neuer-mitarbeiter-code'], true);
+            ui.melde(err.message, 'fehler', { autoCloseMs: 6000, buttonLabel: 'Zum Startmenü', onButton: () => this.zeigeStartmenü() });
+        }
     },
 
     weiterZuWerkzeug() {
@@ -166,6 +323,12 @@ const app = {
     async onScan(code) {
         const bereinigt = String(code || '').trim();
         if (!bereinigt) return;
+
+        // Mitarbeiter hinzufügen: Barcode-Scan (alle Varianten des Schritts)
+        if (/hinzufueg|mitarbeiter.*neu|neu.*mitarbeiter|mitarbeiter.*add|add.*mitarbeiter/i.test(String(this.schritt || ''))) {
+            await this.scanMitarbeiterHinzufuegen(bereinigt);
+            return;
+        }
 
         switch (this.schritt) {
             case 'ausleihen-mitarbeiter':
@@ -443,6 +606,26 @@ const app = {
             ui.melde(err.message, 'fehler', { autoCloseMs: 6000 });
         }
     },
+    // Aliase (Mitarbeiter hinzufuegen)
+    async mitarbeiterHinzufuegen() { return this.startMitarbeiterHinzufuegen(); },
+    async startNeuerMitarbeiter() { return this.startMitarbeiterHinzufuegen(); },
+    async neuerMitarbeiter() { return this.startMitarbeiterHinzufuegen(); },
+    async mitarbeiterNeu() { return this.startMitarbeiterHinzufuegen(); },
+    async mitarbeiterAdd() { return this.startMitarbeiterHinzufuegen(); },
+    weiterZuBarcode() { return this.weiterZuMitarbeiterBarcode(); },
+    weiterZuNeuerMitarbeiterBarcode() { return this.weiterZuMitarbeiterBarcode(); },
+    bestaetigeName() { return this.weiterZuMitarbeiterBarcode(); },
+    bestaetigeMitarbeiterName() { return this.weiterZuMitarbeiterBarcode(); },
+    async bestaetigeMitarbeiter() { return this.bestaetigeMitarbeiterHinzufuegen(); },
+    scanNeuerMitarbeiter(barcode) { return this.scanMitarbeiterHinzufuegen(barcode); },
+    scanMitarbeiterNeu(barcode) { return this.scanMitarbeiterHinzufuegen(barcode); },
+    scanBarcode(barcode) { return this.scanMitarbeiterHinzufuegen(barcode); },
+    scanNeu(barcode) { return this.scanMitarbeiterHinzufuegen(barcode); },
+    resetNeuerMitarbeiter() { return this.resetMitarbeiterHinzufuegen(); },
+    resetMitarbeiterNeu() { return this.resetMitarbeiterHinzufuegen(); },
+    resetBarcode() { return this.resetMitarbeiterHinzufuegen(); },
+    zurueckZuName() { return this.zurueckZuMitarbeiterName(); },
+    zurueckZuSchritt1() { return this.zurueckZuMitarbeiterName(); },
 };
 
 document.addEventListener('DOMContentLoaded', () => app.init());

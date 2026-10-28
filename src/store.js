@@ -104,6 +104,21 @@ function mitarbeiterSpeichern(liste) {
   return liste.length;
 }
 
+function mitarbeiterHinzufuegen(eintrag) {
+  const code = normiereCode(eintrag && eintrag.barcode);
+  const name = String((eintrag && eintrag.name) || '').trim();
+  if (!code || !name) return null;
+  const liste = mitarbeiterLaden();
+  if (liste.some((m) => m.barcode === code)) return null; // Duplikat
+  liste.push({ barcode: code, name });
+  mitarbeiterSpeichern(liste);
+  return { barcode: code, name };
+}
+
+// Alias fuer alternative Benennung
+const mitarbeiterAnlegen = mitarbeiterHinzufuegen;
+const mitarbeiterAdd = mitarbeiterHinzufuegen;
+
 function mitarbeiterSuchen(barcode) {
   const code = normiereCode(barcode);
   if (!code) return null;
@@ -231,6 +246,9 @@ module.exports = {
   mitarbeiterLaden,
   mitarbeiterSpeichern,
   mitarbeiterSuchen,
+  mitarbeiterHinzufuegen,
+  mitarbeiterAnlegen,
+  mitarbeiterAdd,
   ausleihenLaden,
   ausleihenSpeichern,
   ausleihenHinzufuegen,

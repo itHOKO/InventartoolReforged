@@ -19,6 +19,7 @@
         </div>
         <div class="button-gruppe klein">
             <button class="btn btn-outline" data-aktion="mitarbeiterliste">👥 Mitarbeiterliste verwalten</button>
+            <button class="btn btn-outline" data-aktion="mitarbeiter-hinzufuegen">➕ Mitarbeiter hinzufügen</button>
             <button class="btn btn-outline" data-aktion="status">ℹ️ Status / Dateipfade</button>
         </div>
         <p id="start-status" class="statuszeile"></p>
@@ -108,6 +109,40 @@
             </table>
         </div>
         <div class="button-gruppe">
+            <button class="btn btn-outline" data-aktion="start">↩ Zurück zum Startmenü</button>
+        </div>
+    </section>
+
+<!-- ===== MITARBEITER HINZUFÜGEN – SCHRITT 1: NAME ===== -->
+    <section id="seite-mitarbeiter-hinzufuegen" class="seite">
+        <h2>Mitarbeiter hinzufügen – Schritt 1 von 2</h2>
+        <p class="hinweis">Bitte den <strong>Namen des Mitarbeiters</strong> eingeben</p>
+        <div class="form-gruppe">
+            <label for="input-mitarbeiter-name">Name <span class="pflicht">* Pflichtfeld</span></label>
+            <input type="text" id="input-mitarbeiter-name" class="eingabe-feld"
+                   placeholder="z. B. Max Mustermann" autocomplete="off"
+                   data-kein-scanner="true">
+        </div>
+        <div class="button-gruppe">
+            <button class="btn btn-primary" data-aktion="weiter-mitarbeiter-barcode">Weiter zur Mitarbeiterkarte →</button>
+            <button class="btn btn-outline" data-aktion="start">↩ Zurück zum Startmenü</button>
+        </div>
+    </section>
+
+    <!-- ===== MITARBEITER HINZUFÜGEN – SCHRITT 2: BARCODE ===== -->
+    <section id="seite-mitarbeiter-hinzufuegen-barcode" class="seite">
+        <h2>Mitarbeiter hinzufügen – Schritt 2 von 2</h2>
+        <div class="info-karte">
+            <p><strong>Name:</strong> <span id="anzeige-neuer-mitarbeiter-name"></span></p>
+        </div>
+        <p class="hinweis">Bitte die <strong>Mitarbeiterkarte</strong> scannen</p>
+        <div class="scanner-feld">
+            <input type="text" id="input-mitarbeiter-barcode-neu" class="scanner-input"
+                   autocomplete="off" placeholder="Mitarbeitercode…" aria-label="Mitarbeitercode">
+        </div>
+        <div class="button-gruppe">
+            <button class="btn btn-warning" data-aktion="reset-mitarbeiter-hinzufuegen">↺ Neu scannen</button>
+            <button class="btn btn-outline" data-aktion="zurueck-mitarbeiter-name">↩ Zurück zu Schritt 1</button>
             <button class="btn btn-outline" data-aktion="start">↩ Zurück zum Startmenü</button>
         </div>
     </section>

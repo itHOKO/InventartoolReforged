@@ -50,6 +50,22 @@ const api = {
         return api.anfrage('POST', '/api/mitarbeiter/speichern', { mitarbeiter });
     },
 
+    mitarbeiterHinzufuegen(barcodeOderDaten, name) {
+        let body;
+        if (barcodeOderDaten && typeof barcodeOderDaten === 'object') {
+            body = barcodeOderDaten;
+        } else {
+            body = { barcode: barcodeOderDaten, name };
+        }
+        return api.anfrage('POST', '/api/mitarbeiter/hinzufuegen', body);
+    },
+    mitarbeiterAnlegen(barcodeOderDaten, name) {
+        return api.mitarbeiterHinzufuegen(barcodeOderDaten, name);
+    },
+    mitarbeiterAdd(barcodeOderDaten, name) {
+        return api.mitarbeiterHinzufuegen(barcodeOderDaten, name);
+    },
+
     ausleiheAnlegen(daten) {
         return api.anfrage('POST', '/api/ausleihen', daten);
     },
